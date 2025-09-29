@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:online_image_classification/controller/home_provider.dart';
+import 'package:online_image_classification/service/http_service.dart';
 import 'package:online_image_classification/util/widgets_extension.dart';
 import 'package:provider/provider.dart';
 
@@ -11,7 +12,9 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => HomeProvider(),
+      create: (context) => HomeProvider(
+        HttpService(),
+      ),
       child: const _HomeView(),
     );
   }
@@ -71,6 +74,21 @@ class _HomeBody extends StatelessWidget {
               spacing: 8,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Consumer<HomeProvider>(
+                  builder: (context, value, child) {
+                    final uploadResponse = value.uploadResponse;
+                    final data = uploadResponse?.data;
+                    if (value.uploadResponse == null || data == null) {
+                      return SizedBox.shrink();
+                    }
+
+                    return Text(
+                      "${data.result} - ${data.confidenceScore.round()}%",
+                      style: Theme.of(context).textTheme.headlineSmall,
+                      textAlign: TextAlign.center,
+                    );
+                  },
+                ),
                 Row(
                   spacing: 8,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -147,17 +165,19 @@ class _HomeBody extends StatelessWidget {
                         Theme.of(context).colorScheme.primaryContainer,
                     elevation: 0,
                   ),
-                  onPressed: () {
-                    final scaffoldMessenger = ScaffoldMessenger.of(context);
-                    scaffoldMessenger.showSnackBar(
-                      SnackBar(content: Text("Feature under development")),
-                    );
-                  },
-                  child: Text("Analyze Gambar",
-                      style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 18,
-                          color: Theme.of(context).colorScheme.onSurface)),
+                  onPressed: () => context.read<HomeProvider>().upload(),
+                  child: Consumer<HomeProvider>(
+                    builder: (context, value, child) {
+                      if (value.isUploading) {
+                        return Center(child: CircularProgressIndicator());
+                      }
+                      return Text("Analyze Gambar",
+                          style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 18,
+                              color: Theme.of(context).colorScheme.onSurface));
+                    },
+                  ),
                 ),
               ],
             ),
