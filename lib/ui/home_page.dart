@@ -40,8 +40,37 @@ class _HomeView extends StatelessWidget {
   }
 }
 
-class _HomeBody extends StatelessWidget {
+class _HomeBody extends StatefulWidget {
   const _HomeBody();
+
+  @override
+  State<_HomeBody> createState() => _HomeBodyState();
+}
+
+class _HomeBodyState extends State<_HomeBody> {
+  @override
+  void initState() {
+    super.initState();
+
+    final homeProvider = context.read<HomeProvider>();
+    homeProvider.addListener(() {
+      final scaffoldMessenger = ScaffoldMessenger.of(context);
+      final message = homeProvider.message;
+
+      if (message != null) {
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+              behavior: SnackBarBehavior.floating,
+              content: Text(message,
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500)),
+              backgroundColor: Colors.green),
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

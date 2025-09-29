@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:online_image_classification/models/upload_response.dart';
 import 'package:online_image_classification/service/http_service.dart';
+import 'package:online_image_classification/service/image_service.dart';
 import 'package:online_image_classification/ui/camera_page.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -70,7 +71,9 @@ class HomeProvider extends ChangeNotifier {
     final bytes = await imageFile!.readAsBytes();
     final fileName = imageFile!.name;
 
-    uploadResponse = await _httpService.uploadDocument(bytes, fileName);
+    final miniBytes = await ImageService.compressImage(bytes);
+
+    uploadResponse = await _httpService.uploadDocument(miniBytes, fileName);
     message = uploadResponse?.message;
     isUploading = false;
     notifyListeners();
